@@ -2,7 +2,7 @@ import argparse
 
 from pathlib import Path
 from datasets import DatasetDict
-from data_loader import DEFAULT_DATASET_NAME, DEFAULT_OUTPUT_DIR, load_imdb_dataset, save_dataset
+from data_loader import DEFAULT_DATASET_NAME, DEFAULT_OUTPUT_DIR, load_data, save_data
 from text_cleaning import get_english_stopwords, review_to_words
 
 
@@ -14,22 +14,21 @@ def print_dataset_summary(dataset: DatasetDict) -> None:
         print("test split size:", len(dataset["test"]))
 
 
-def print_sample_reviews(dataset: DatasetDict, sample_count: int = 3) -> None:
+def preprocess_dataset(dataset: DatasetDict, output_dir: Path) -> None:
     stop_words = get_english_stopwords()
     train_set = dataset["train"]
+    cleaned_texts = []
 
-    print("\nSample reviews from the train split:\n")
-    for index in range(min(sample_count, len(train_set))):
+    for index in range(len(train_set)):
         raw_review = train_set[index]["text"]
-        label = train_set[index]["label"]
         cleaned_review = review_to_words(raw_review, stop_words)
+        cleaned_texts.append(cleaned_review)
+    dataset["train"] = dataset["train"].add_column("cleaned_text", cleaned_texts)
 
-        print(f"--- Review {index} (label={label}) ---")
-        print(raw_review[:500].replace("\n", " "))
-        print("\nCleaned:")
-        print(cleaned_review[:500])
-        print()
-
+    print(dataset)
+    print(dataset["train"])
+    return dataset
+    
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Orchestrate the IMDb dataset download and preprocessing pipeline.")
@@ -41,10 +40,10 @@ def parse_arguments() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_arguments()
-    dataset = load_imdb_dataset(args.dataset_name)
-    print_dataset_summary(dataset)
-    print_sample_reviews(dataset, sample_count=args.sample_count)
-
+    dataset = load_data(args.dataset_name)
+    save_data(dataset, Path(args.output_dir + "/raw"))
+    dataset_preprocessed = preprocess_dataset(dataset, Path(args.output_dir + "/preprocessed"))
+    save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"))
 
 if __name__ == "__main__":
     main()

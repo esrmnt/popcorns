@@ -9,10 +9,7 @@ LETTER_ONLY_PATTERN = re.compile(r"[^a-zA-Z]")
 
 def ensure_nltk_resource(resource_name: str) -> None:
     """Download an NLTK resource if it is not already installed."""
-    try:
-        nltk.data.find(f"corpora/{resource_name}")
-    except LookupError:
-        nltk.download(resource_name, download_dir="corpora/{resource_name}")
+    nltk.download(resource_name)
 
 
 def get_english_stopwords() -> Set[str]:

@@ -1,9 +1,11 @@
 import argparse
+import numpy as np
 
 from pathlib import Path
 from datasets import DatasetDict
 from data_loader import DEFAULT_DATASET_NAME, DEFAULT_OUTPUT_DIR, load_data, save_data
 from text_cleaning import get_english_stopwords, review_to_words
+from bow_features import extract_bow_features
 
 
 def print_dataset_summary(dataset: DatasetDict) -> None:
@@ -44,6 +46,12 @@ def main() -> None:
     save_data(dataset, Path(args.output_dir + "/raw"))
     dataset_preprocessed = preprocess_dataset(dataset, Path(args.output_dir + "/preprocessed"))
     save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"))
+    bow_dataset = extract_bow_features(dataset_preprocessed)
+    print_dataset_summary(bow_dataset)
+    print(bow_dataset["train"]["bow_features"][:args.sample_count])
+    print(np.array(bow_dataset["train"]["bow_features"][:args.sample_count]))
+
+    dist 
 
 if __name__ == "__main__":
     main()

@@ -10,6 +10,7 @@ pip install pandas
 pip install datasets 
 pip install BeautifulSoup4
 pip install nltk   
+pip install scikit-learn
 ```
 
 ### Dataset

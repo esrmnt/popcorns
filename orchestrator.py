@@ -16,7 +16,7 @@ def print_dataset_summary(dataset: DatasetDict) -> None:
         print("test split size:", len(dataset["test"]))
 
 
-def preprocess_dataset(dataset: DatasetDict, output_dir: Path) -> None:
+def preprocess_dataset(dataset: DatasetDict) -> None:
     stop_words = get_english_stopwords()
     train_set = dataset["train"]
     cleaned_texts = []
@@ -27,8 +27,6 @@ def preprocess_dataset(dataset: DatasetDict, output_dir: Path) -> None:
         cleaned_texts.append(cleaned_review)
     dataset["train"] = dataset["train"].add_column("cleaned_text", cleaned_texts)
 
-    print(dataset)
-    print(dataset["train"])
     return dataset
     
 
@@ -43,9 +41,12 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     args = parse_arguments()
     dataset = load_data(args.dataset_name)
+    print("Original dataset summary:")
     print_dataset_summary(dataset)
-    # dataset_preprocessed = preprocess_dataset(dataset, Path(args.output_dir + "/preprocessed"))
-    # save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"))
+    dataset_preprocessed = preprocess_dataset(dataset)
+    print("Preprocessed dataset summary:")
+    print_dataset_summary(dataset_preprocessed)
+    save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"))
     # bow_dataset = extract_bow_features(dataset_preprocessed)
     # print_dataset_summary(bow_dataset)
     # print(bow_dataset["train"]["bow_features"][:args.sample_count])

@@ -1,15 +1,29 @@
 import re
 import nltk
 
+from pathlib import Path
 from bs4 import BeautifulSoup
 from typing import Optional, Set
 
 STOPWORDS_RESOURCE = "stopwords"
 LETTER_ONLY_PATTERN = re.compile(r"[^a-zA-Z]")
+DEFAULT_LOCAL_NLTK_PATH = Path("dataset/nltk")
 
 def ensure_nltk_resource(resource_name: str) -> None:
-    """Download an NLTK resource if it is not already installed."""
-    nltk.download(resource_name)
+    """Download an NLTK resource if it is not already available in dataset/nltk."""    
+    # Create directory if it doesn't exist
+    DEFAULT_LOCAL_NLTK_PATH.mkdir(parents=True, exist_ok=True)
+    
+    # Add to NLTK's search path
+    if DEFAULT_LOCAL_NLTK_PATH not in nltk.data.path:
+        nltk.data.path.insert(0, DEFAULT_LOCAL_NLTK_PATH)
+    
+    # Check if resource is already available
+    try:
+        nltk.data.find(resource_name)
+    except LookupError:
+        # Download and save to dataset/nltk if not found
+        nltk.download(resource_name, download_dir=DEFAULT_LOCAL_NLTK_PATH)
 
 
 def get_english_stopwords() -> Set[str]:

@@ -43,15 +43,13 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     args = parse_arguments()
     dataset = load_data(args.dataset_name)
-    save_data(dataset, Path(args.output_dir + "/raw"))
-    dataset_preprocessed = preprocess_dataset(dataset, Path(args.output_dir + "/preprocessed"))
-    save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"))
-    bow_dataset = extract_bow_features(dataset_preprocessed)
-    print_dataset_summary(bow_dataset)
-    print(bow_dataset["train"]["bow_features"][:args.sample_count])
-    print(np.array(bow_dataset["train"]["bow_features"][:args.sample_count]))
-
-    dist 
+    print_dataset_summary(dataset)
+    # dataset_preprocessed = preprocess_dataset(dataset, Path(args.output_dir + "/preprocessed"))
+    # save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"))
+    # bow_dataset = extract_bow_features(dataset_preprocessed)
+    # print_dataset_summary(bow_dataset)
+    # print(bow_dataset["train"]["bow_features"][:args.sample_count])
+    # print(np.array(bow_dataset["train"]["bow_features"][:args.sample_count]))
 
 if __name__ == "__main__":
     main()

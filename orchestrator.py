@@ -5,7 +5,7 @@ from pathlib import Path
 from datasets import DatasetDict
 from data_loader import DEFAULT_DATASET_NAME, DEFAULT_OUTPUT_DIR, load_data, save_data
 from text_cleaning import get_english_stopwords, review_to_words
-from bow_features import extract_bow_features
+from bow_features import extract_bow_features, train_word2vec_model
 
 
 def print_dataset_summary(dataset: DatasetDict) -> None:
@@ -49,10 +49,21 @@ def main() -> None:
     print("Preprocessed dataset summary:")
     print_dataset_summary(dataset_preprocessed)
     save_data(dataset_preprocessed, Path(args.output_dir + "/preprocessed"), Path(args.output_dir))
+
+    print(f"\nSample cleaned reviews (first {args.sample_count}):")
+    for i in range(args.sample_count):
+        print("-----------------------------")
+        print(f"Original Review {i + 1}: {dataset_preprocessed['train'][i]['text']}")
+        print("\n")
+        print(f"Review {i + 1}: {dataset_preprocessed['train'][i]['cleaned_text']}")
+        print("-----------------------------")
+
     # bow_dataset = extract_bow_features(dataset_preprocessed)
-    # print_dataset_summary(bow_dataset)
-    # print(bow_dataset["train"]["bow_features"][:args.sample_count])
-    # print(np.array(bow_dataset["train"]["bow_features"][:args.sample_count]))
+    # print(bow_dataset["train"]["bow_features"][:3])
+
+    w2v_model = train_word2vec_model(dataset_preprocessed, text_column="cleaned_text")
+    print("Vocabulary size:", len(w2v_model.wv))
+    print("Vector for 'good':", w2v_model.wv["good"][:5])
 
 if __name__ == "__main__":
     main()

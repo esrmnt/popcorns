@@ -11,6 +11,7 @@ pip install datasets
 pip install BeautifulSoup4
 pip install nltk   
 pip install scikit-learn
+pip install gensim
 ```
 
 ### Dataset

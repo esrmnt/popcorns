@@ -56,14 +56,12 @@ def main() -> None:
         print(f"Original Review {i + 1}: {dataset_preprocessed['train'][i]['text']}")
         print("\n")
         print(f"Review {i + 1}: {dataset_preprocessed['train'][i]['cleaned_text']}")
-        print("-----------------------------")
-
-    # bow_dataset = extract_bow_features(dataset_preprocessed)
-    # print(bow_dataset["train"]["bow_features"][:3])
 
     w2v_model = train_word2vec_model(dataset_preprocessed, text_column="cleaned_text")
     print("Vocabulary size:", len(w2v_model.wv))
     print("Vector for 'good':", w2v_model.wv["good"][:5])
+
+    print("Similarity between 'good' and 'great':", w2v_model.wv.similarity("good", "great"))
 
 if __name__ == "__main__":
     main()

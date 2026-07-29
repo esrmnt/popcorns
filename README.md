@@ -4,14 +4,9 @@ A machine learning project exploring sentiment analysis on movie reviews using W
 
 ### Setup
 ```python
-py -3.12 -m venv .venv 
-.\.venv\Scripts\Activate.ps1
-pip install pandas
-pip install datasets 
-pip install BeautifulSoup4
-pip install nltk   
-pip install scikit-learn
-pip install gensim
+python3.12 -m venv .venv 
+source .venv/bin/activate
+pip install pandas datasets BeautifulSoup4 nltk scikit-learn gensim
 ```
 
 ### Dataset

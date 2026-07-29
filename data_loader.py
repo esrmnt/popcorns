@@ -18,11 +18,11 @@ def load_data(dataset_name: str = DEFAULT_DATASET_NAME, path: Path = None, outpu
 
     print(f"Loading dataset '{dataset_name}' from Hugging Face hub...")
     dataset = load_dataset(dataset_name)
-    save_data(dataset, local_path, output_dir)
+    save_data(dataset, local_path)
     return dataset
 
 
-def save_data(dataset: DatasetDict, target_dir: Path = DEFAULT_OUTPUT_DIR, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
+def save_data(dataset: DatasetDict, target_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
     """Save a Hugging Face dataset to disk."""
     target_dir = Path(target_dir)
     target_dir.mkdir(parents=True, exist_ok=True)

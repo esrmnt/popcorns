@@ -51,76 +51,6 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# def main() -> None:
-#     args = parse_arguments()
-
-#     dataset = load_data(dataset_name=args.dataset_name, output_dir=Path(args.output_dir))
-#     print("Original dataset summary:")
-#     print_dataset_summary(dataset)
-
-#     dataset_preprocessed = preprocess_dataset(dataset = dataset, dataset_name=args.dataset_name, output_dir=Path(args.output_dir))
-#     print("Preprocessed dataset summary:")
-#     print_dataset_summary(dataset_preprocessed)
-
-#     # print(f"\nSample cleaned texts (first {args.sample_count}):")
-#     # for i in range(args.sample_count):
-#     #     print("-----------------------------")
-#     #     print(f"Original Text {i + 1}: {dataset_preprocessed['train'][i]['text']}")
-#     #     print("\n")
-#     #     print(f"Cleaned Text {i + 1}: {dataset_preprocessed['train'][i]['cleaned_text']}")
-
-#     # w2v_model = train_word2vec_model(dataset_preprocessed, text_column="cleaned_text")
-#     # print("Vocabulary size:", len(w2v_model.wv))
-#     # print("Vector for 'good':", w2v_model.wv["good"][:5])
-
-    
-#     # print("Similarity between 'good' and 'great':", w2v_model.wv.similarity("good", "great"))
-
-#     tokenized_docs = [doc.split() for doc in dataset_preprocessed["train"]["cleaned_text"] if doc]
-#     word2idx, idx2word = build_vocabulary(tokenized_docs)
-#     print("word2idx:", list(word2idx.items())[:10])  # Print first 10 entries for brevity
-#     print("idx2word:", idx2word[:10])  # Print first 10 entries for brevity
-
-#     context_target_pairs = generate_context_target_pairs(tokenized_docs, word2idx, window_size=2)
-#     print("Context-Target pairs:", context_target_pairs[:10])  # Print first 10 pairs for brevity   
-
-
-def test_build_vocabulary():
-    # A tiny fake corpus - 3 "documents", already tokenized
-    tokenized_docs = [
-        ["the", "cat", "sat", "on", "the", "mat"],
-        ["the", "dog", "sat", "on", "the", "log"],
-        ["cat", "and", "dog", "are", "friends"],
-    ]
-
-    word2idx, idx2word = build_vocabulary(
-        tokenized_docs,
-        min_count=2,      # keep everything for this small test
-        max_vocab_size=100,
-    )
-
-    print("word2idx:", word2idx)
-    print("idx2word:", idx2word)
-
-    # # --- sanity checks ---
-    # # "the" appears 4 times total - should be in the vocab
-    # assert "the" in word2idx
-    # # word2idx and idx2word should be inverses of each other
-    # for word, idx in word2idx.items():
-    #     assert idx2word[idx] == word
-    # # no duplicate indices
-    # assert len(word2idx) == len(set(word2idx.values()))
-
-    # print("All checks passed. Vocab size:", len(word2idx))
-    context_target_pairs = generate_context_target_pairs(tokenized_docs, word2idx, window_size=2)
-    print("Context-Target pairs:", context_target_pairs[:10])  # Print first 10 pairs for brevity   
-
-
-# if __name__ == "__main__":
-#     #main()
-#     test_build_vocabulary()
-
-
 def main() -> None:
     output_dir = DEFAULT_OUTPUT_DIR
     dataset = load_data(dataset_name=DEFAULT_DATASET_NAME, output_dir=output_dir)
@@ -152,4 +82,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

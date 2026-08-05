@@ -6,6 +6,7 @@ from datasets import DatasetDict
 from data_loader import DEFAULT_DATASET_NAME, DEFAULT_OUTPUT_DIR, load_data, save_data
 from text_cleaning import get_english_stopwords, text_to_words, text_to_words
 from bow_features import extract_bow_features, train_word2vec_model
+from cbow import MAX_VOCAB_SIZE, NUM_TRAIN_DOCS, WINDOW_SIZE, build_vocabulary, generate_context_target_pairs, most_similar, train_cbow
 
 
 def print_dataset_summary(dataset: DatasetDict) -> None:
@@ -50,29 +51,104 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# def main() -> None:
+#     args = parse_arguments()
+
+#     dataset = load_data(dataset_name=args.dataset_name, output_dir=Path(args.output_dir))
+#     print("Original dataset summary:")
+#     print_dataset_summary(dataset)
+
+#     dataset_preprocessed = preprocess_dataset(dataset = dataset, dataset_name=args.dataset_name, output_dir=Path(args.output_dir))
+#     print("Preprocessed dataset summary:")
+#     print_dataset_summary(dataset_preprocessed)
+
+#     # print(f"\nSample cleaned texts (first {args.sample_count}):")
+#     # for i in range(args.sample_count):
+#     #     print("-----------------------------")
+#     #     print(f"Original Text {i + 1}: {dataset_preprocessed['train'][i]['text']}")
+#     #     print("\n")
+#     #     print(f"Cleaned Text {i + 1}: {dataset_preprocessed['train'][i]['cleaned_text']}")
+
+#     # w2v_model = train_word2vec_model(dataset_preprocessed, text_column="cleaned_text")
+#     # print("Vocabulary size:", len(w2v_model.wv))
+#     # print("Vector for 'good':", w2v_model.wv["good"][:5])
+
+    
+#     # print("Similarity between 'good' and 'great':", w2v_model.wv.similarity("good", "great"))
+
+#     tokenized_docs = [doc.split() for doc in dataset_preprocessed["train"]["cleaned_text"] if doc]
+#     word2idx, idx2word = build_vocabulary(tokenized_docs)
+#     print("word2idx:", list(word2idx.items())[:10])  # Print first 10 entries for brevity
+#     print("idx2word:", idx2word[:10])  # Print first 10 entries for brevity
+
+#     context_target_pairs = generate_context_target_pairs(tokenized_docs, word2idx, window_size=2)
+#     print("Context-Target pairs:", context_target_pairs[:10])  # Print first 10 pairs for brevity   
+
+
+def test_build_vocabulary():
+    # A tiny fake corpus - 3 "documents", already tokenized
+    tokenized_docs = [
+        ["the", "cat", "sat", "on", "the", "mat"],
+        ["the", "dog", "sat", "on", "the", "log"],
+        ["cat", "and", "dog", "are", "friends"],
+    ]
+
+    word2idx, idx2word = build_vocabulary(
+        tokenized_docs,
+        min_count=2,      # keep everything for this small test
+        max_vocab_size=100,
+    )
+
+    print("word2idx:", word2idx)
+    print("idx2word:", idx2word)
+
+    # # --- sanity checks ---
+    # # "the" appears 4 times total - should be in the vocab
+    # assert "the" in word2idx
+    # # word2idx and idx2word should be inverses of each other
+    # for word, idx in word2idx.items():
+    #     assert idx2word[idx] == word
+    # # no duplicate indices
+    # assert len(word2idx) == len(set(word2idx.values()))
+
+    # print("All checks passed. Vocab size:", len(word2idx))
+    context_target_pairs = generate_context_target_pairs(tokenized_docs, word2idx, window_size=2)
+    print("Context-Target pairs:", context_target_pairs[:10])  # Print first 10 pairs for brevity   
+
+
+# if __name__ == "__main__":
+#     #main()
+#     test_build_vocabulary()
+
+
 def main() -> None:
-    args = parse_arguments()
+    output_dir = DEFAULT_OUTPUT_DIR
+    dataset = load_data(dataset_name=DEFAULT_DATASET_NAME, output_dir=output_dir)
+    stop_words = get_english_stopwords(output_dir)
 
-    dataset = load_data(dataset_name=args.dataset_name, output_dir=Path(args.output_dir))
-    # print("Original dataset summary:")
-    # print_dataset_summary(dataset)
+    train_split = dataset["train"]
+    n_docs = min(NUM_TRAIN_DOCS, len(train_split))
+    print(f"Cleaning {n_docs} documents...")
 
-    dataset_preprocessed = preprocess_dataset(dataset = dataset, dataset_name=args.dataset_name, output_dir=Path(args.output_dir))
-    # print("Preprocessed dataset summary:")
-    # print_dataset_summary(dataset_preprocessed)
+    tokenized_docs = []
+    for i in range(n_docs):
+        cleaned = text_to_words(train_split[i]["text"], stop_words)
+        tokenized_docs.append(cleaned.split())
+        print(f"Cleaned {i + 1}/{n_docs}", end="\r")
+    print()
 
-    # print(f"\nSample cleaned texts (first {args.sample_count}):")
-    # for i in range(args.sample_count):
-    #     print("-----------------------------")
-    #     print(f"Original Text {i + 1}: {dataset_preprocessed['train'][i]['text']}")
-    #     print("\n")
-    #     print(f"Cleaned Text {i + 1}: {dataset_preprocessed['train'][i]['cleaned_text']}")
+    word2idx, idx2word = build_vocabulary(tokenized_docs)
+    print(f"Vocabulary size: {len(word2idx)}")
 
-    w2v_model = train_word2vec_model(dataset_preprocessed, text_column="cleaned_text")
-    print("Vocabulary size:", len(w2v_model.wv))
-    print("Vector for 'good':", w2v_model.wv["good"][:5])
+    pairs = generate_context_target_pairs(tokenized_docs, word2idx, WINDOW_SIZE)
+    print(f"Generated {len(pairs)} (context, target) training pairs")
 
-    # print("Similarity between 'good' and 'great':", w2v_model.wv.similarity("good", "great"))
+    model = train_cbow(pairs, vocab_size=len(word2idx))
+
+    for probe_word in ["good", "bad", "movie"]:
+        neighbors = most_similar(model, probe_word, word2idx, idx2word)
+        print(f"Words similar to '{probe_word}': {neighbors}")
+
 
 if __name__ == "__main__":
     main()
